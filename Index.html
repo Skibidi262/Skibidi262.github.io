@@ -1,0 +1,214 @@
+<html><head><base href="." />
+<style>
+body {
+    font-family: 'Comic Sans MS', cursive;
+    background: repeating-linear-gradient(45deg, #99ccff, #99ccff 10px, #b3e0ff 10px, #b3e0ff 20px);
+    padding: 20px;
+}
+
+.quiz-container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+}
+
+.question {
+    margin: 20px 0;
+    padding: 15px;
+    border: 3px dashed #3399ff;
+    border-radius: 10px;
+    animation: wobble 2s infinite;
+}
+
+@keyframes wobble {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(0.5deg); }
+    75% { transform: rotate(-0.5deg); }
+    100% { transform: rotate(0deg); }
+}
+
+.options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+button {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background: #3399ff;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+button:hover {
+    transform: scale(1.05);
+    background: #0066cc;
+}
+
+#result {
+    font-size: 24px;
+    text-align: center;
+    margin-top: 20px;
+    padding: 20px;
+    border: 3px solid #3399ff;
+    border-radius: 10px;
+    display: none;
+}
+
+.sparkle {
+    position: fixed;
+    pointer-events: none;
+    animation: sparkleAnim 1s linear forwards;
+}
+
+@keyframes sparkleAnim {
+    0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+    100% { transform: translate(var(--tx), var(--ty)) rotate(360deg); opacity: 0; }
+}
+</style>
+</head>
+<body>
+<div class="quiz-container">
+    <h1>🌟 Are You As Smart As Fred? 🌟</h1>
+    <div id="quiz"></div>
+    <button id="submit">Calculate My Big Brain Score!</button>
+    <div id="result"></div>
+</div>
+
+<script>
+const questions = [
+    {
+        question: "What color is a circle?",
+        options: ["Yes", "Purple", "Triangle", "Meow"],
+        correctAnswer: "Purple"
+    },
+    {
+        question: "How many cats are in a rainbow?",
+        options: ["Seven", "Sparkles", "Green", "All of them"],
+        correctAnswer: "All of them"
+    },
+    {
+        question: "If a tree falls in the forest and no one is around, what flavor is it?",
+        options: ["Strawberry", "Blue", "Rectangle", "Pizza"],
+        correctAnswer: "Blue"
+    },
+    {
+        question: "What do clouds taste like?",
+        options: ["Cotton candy", "Mathematics", "Yesterday", "Square"],
+        correctAnswer: "Cotton candy"
+    },
+    {
+        question: "How many corners does a circle have?",
+        options: ["None", "All of them", "Purple", "Yes"],
+        correctAnswer: "All of them"
+    },
+    {
+        question: "What's the sound of yellow?",
+        options: ["Beep", "Woosh", "Sparkle", "Triangle"],
+        correctAnswer: "Sparkle"
+    },
+    {
+        question: "How many fingers does a fish have?",
+        options: ["Piano", "Wednesday", "Zero", "Rainbow"],
+        correctAnswer: "Piano"
+    },
+    {
+        question: "What's the square root of pizza?",
+        options: ["Cheese", "Binary", "Purple", "Unicorn"],
+        correctAnswer: "Cheese"
+    }
+];
+
+// Populate more questions to reach 40
+while (questions.length < 40) {
+    questions.push({
+        question: `Random question #${questions.length + 1}?`,
+        options: ["Sparkles", "Rainbow", "Pizza", "All of above"],
+        correctAnswer: "All of above"
+    });
+}
+
+function createSparkle(x, y) {
+    const sparkle = document.createElement('div');
+    sparkle.className = 'sparkle';
+    sparkle.innerHTML = '✨';
+    sparkle.style.left = x + 'px';
+    sparkle.style.top = y + 'px';
+    sparkle.style.setProperty('--tx', (Math.random() * 200 - 100) + 'px');
+    sparkle.style.setProperty('--ty', (Math.random() * 200 - 100) + 'px');
+    document.body.appendChild(sparkle);
+    setTimeout(() => sparkle.remove(), 1000);
+}
+
+document.addEventListener('mousemove', (e) => {
+    if (Math.random() < 0.1) {
+        createSparkle(e.pageX, e.pageY);
+    }
+});
+
+let currentQuestion = 0;
+const quizDiv = document.getElementById('quiz');
+const submitButton = document.getElementById('submit');
+const resultDiv = document.getElementById('result');
+
+function displayQuestion() {
+    const question = questions[currentQuestion];
+    const questionHtml = `
+        <div class="question">
+            <h2>Question ${currentQuestion + 1}/40</h2>
+            <p>${question.question}</p>
+            <div class="options">
+                ${question.options.map(option => `
+                    <button onclick="selectOption('${option}')">${option}</button>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    quizDiv.innerHTML = questionHtml;
+}
+
+let score = 0;
+function selectOption(selected) {
+    if (selected === questions[currentQuestion].correctAnswer) {
+        score++;
+    }
+    currentQuestion++;
+    if (currentQuestion < questions.length) {
+        displayQuestion();
+    } else {
+        showResult();
+    }
+}
+
+function showResult() {
+    quizDiv.style.display = 'none';
+    submitButton.style.display = 'none';
+    resultDiv.style.display = 'block';
+    
+    const iq = Math.floor(Math.random() * 300) + 100;
+    resultDiv.innerHTML = `
+        <h2>🎉 Your Results! 🎉</h2>
+        <p>You got ${score} out of 40 questions correct!</p>
+        <p>Your calculated IQ is: ${iq}</p>
+        <p>Achievement Unlocked: Ultimate Brain Genius! 🧠✨</p>
+    `;
+    
+    // Celebration sparkles
+    setInterval(() => {
+        createSparkle(
+            Math.random() * window.innerWidth,
+            Math.random() * window.innerHeight
+        );
+    }, 100);
+}
+
+displayQuestion();
+</script>
+</body></html>
